@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Visualization UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000, #0a0a2e);
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 84, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 84, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            opacity: 0.5;
+            animation: gridMove 20s linear infinite;
+        }
+
+        .container {
+            width: 95%; /* Increased width */
+            max-width: 1600px; /* Allow larger max size */
+            background: rgba(10, 10, 46, 0.7);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 84, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 84, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 50px; /* More padding */
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .visualization-box {
+            width: 100%;
+            height: 800px; /* Increased height */
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 84, 255, 0.3);
+            border-radius: 15px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .visualization-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            overflow-y: auto;
+        }
+
+        .button {
+            padding: 15px 40px;
+            font-size: 16px;
+            background: rgba(0, 84, 255, 0.2);
+            color: #fff;
+            border: 1px solid rgba(0, 84, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 84, 255, 0.3);
+            backdrop-filter: blur(5px);
+            display: block;
+            margin: 20px auto;
+        }
+
+        .button:hover {
+            background: rgba(0, 84, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 84, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 46, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 84, 255, 0.3);
+            border-top: 3px solid rgba(0, 84, 255, 1);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="grid-overlay"></div>
+    <div class="container">
+        <div class="visualization-box" id="visualization-content">
+            <iframe id="reportFrame" src="/dash/" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+        <button class="button" onclick="generateReport()">Generate Visualization Report</button>
+        <div class="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        async function generateReport() {
+            const loading = document.querySelector('.loading');
+            loading.classList.add('active');
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const iframe = document.getElementById('reportFrame');
+                const iframeDoc = iframe.contentWindow.document.body;
+                
+                // Ensure iframe content is loaded
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Capture iframe content
+                html2canvas(iframeDoc, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = 210;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    pdf.addImage(imgData, 'PNG', 0, 10, imgWidth, imgHeight);
+                    pdf.save('Visualization_Report.pdf');
+                    
+                    loading.classList.remove('active');
+                    alert("Report generated successfully!");
+                });
+
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                alert("Failed to generate report.");
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
