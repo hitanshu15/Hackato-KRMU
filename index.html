@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexora Feedback System</title>
+    <style>
+        /* Your existing CSS styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000, #0a0a2e);
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            color: #fff;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(0, 84, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 84, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 84, 255, 0.1) 0%, transparent 60%);
+            animation: backgroundPulse 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 84, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 84, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            opacity: 0.5;
+            animation: gridMove 20s linear infinite;
+        }
+
+        .title {
+            text-align: center;
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            padding-top: 2rem;
+            text-shadow: 0 0 10px rgba(0, 84, 255, 0.5);
+            animation: titleGlow 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(0, 84, 255, 0.5), transparent);
+            animation: lineWidth 3s ease-in-out infinite;
+        }
+
+        .live-viz-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: rgba(0, 84, 255, 0.2);
+            color: #fff;
+            border: 1px solid rgba(0, 84, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 84, 255, 0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+            overflow: hidden;
+        }
+
+        .live-viz-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(0, 84, 255, 0.3),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .live-viz-btn:hover::before {
+            left: 100%;
+        }
+
+        .live-viz-btn:hover {
+            background: rgba(0, 84, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 84, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 25px;
+            position: relative;
+            z-index: 1;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 84, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 84, 255, 0.2);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .input-field, .file-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            border: 1px solid rgba(0, 84, 255, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 84, 255, 0.2);
+        }
+
+        .input-field:focus, .file-input:focus {
+            outline: none;
+            border-color: rgba(0, 84, 255, 0.8);
+            box-shadow: 0 0 20px rgba(0, 84, 255, 0.4);
+            transform: scale(1.02);
+        }
+
+        .submit-btn {
+            padding: 12px 40px;
+            background: rgba(0, 84, 255, 0.3);
+            color: #fff;
+            border: 1px solid rgba(0, 84, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 84, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 84, 255, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn:hover::after {
+            opacity: 1;
+        }
+
+        .submit-btn:hover {
+            background: rgba(0, 84, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 84, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn.submitting {
+            animation: submitPulse 1s infinite;
+        }
+
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 84, 255, 0.2);
+            border: 2px solid rgba(0, 84, 255, 0.5);
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 40px;
+            z-index: 1001;
+            backdrop-filter: blur(5px);
+        }
+
+        .category-display {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+            text-align: center;
+        }
+
+        .error-message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #ff0000;
+            text-align: center;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(0, 84, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFade 2s linear forwards;
+        }
+
+        .glow-orb {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 84, 255, 0.2) 0%, transparent 70%);
+            animation: orbFloat 10s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(0, 84, 255, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(0, 84, 255, 0.8); }
+        }
+
+        @keyframes lineWidth {
+            0%, 100% { width: 150px; opacity: 0.5; }
+            50% { width: 250px; opacity: 1; }
+        }
+
+        @keyframes submitPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes successPop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes particleFade {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--moveX), var(--moveY)); opacity: 0; }
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50px, 50px); }
+            50% { transform: translate(0, 100px); }
+            75% { transform: translate(-50px, 50px); }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+
+            .input-field, .file-input {
+                max-width: 90%;
+            }
+
+            .live-viz-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .form-container {
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay"></div>
+    <div class="container">
+        <h1 class="title">Nexora Feedback System</h1>
+        <button class="live-viz-btn" id="liveVizBtn">Live Visualization</button>
+        <div class="form-container">
+            <input type="text" class="input-field" id="textInput" placeholder="Share your feedback...">
+            <input type="file" class="file-input" id="fileInput" accept="image/*,video/*,.pdf,.doc,.docx" multiple>
+            <button class="submit-btn" id="submitBtn">Submit</button>
+            <div class="category-display" id="categoryDisplay"></div>
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+    <div class="success-animation" id="successAnimation">✓</div>
+    <script>
+        // Get DOM elements
+        const textInput = document.getElementById('textInput');
+        const fileInput = document.getElementById('fileInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const liveVizBtn = document.getElementById('liveVizBtn');
+        const successAnimation = document.getElementById('successAnimation');
+        const categoryDisplay = document.getElementById('categoryDisplay');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Create floating orbs
+        function createGlowOrbs() {
+            for (let i = 0; i < 3; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'glow-orb';
+                orb.style.left = `${Math.random() * window.innerWidth}px`;
+                orb.style.top = `${Math.random() * window.innerHeight}px`;
+                orb.style.animationDelay = `${i * 2}s`;
+                document.body.appendChild(orb);
+            }
+        }
+        createGlowOrbs();
+
+        liveVizBtn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+                window.open("http://127.0.0.1:5001/", '_blank');
+            }, 100);
+        });
+
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const text = textInput.value.trim();
+            const files = fileInput.files;
+
+            if (text || files.length > 0) {
+                categoryDisplay.textContent = '';
+                errorMessage.textContent = '';
+
+                submitBtn.classList.add('submitting');
+
+                const formData = new FormData();
+                formData.append('text', text);
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+
+                fetch('/submit', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        successAnimation.style.display = 'flex';
+                        successAnimation.style.animation = 'successPop 0.5s ease-out';
+                        setTimeout(() => {
+                            successAnimation.style.display = 'none';
+                        }, 1500);
+
+                        categoryDisplay.textContent = `Category: ${data.category}`;
+                    } else {
+                        errorMessage.textContent = data.message || 'An error occurred. Please try again.';
+                    }
+                })
+                .catch(error => {
+                    errorMessage.textContent = 'Network error. Please try again later.';
+                })
+                .finally(() => {
+                    submitBtn.classList.remove('submitting');
+                    textInput.value = '';
+                    fileInput.value = '';
+                });
+            } else {
+                errorMessage.textContent = 'Please enter your feedback or upload a file.';
+            }
+        });
+
+        textInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+
+            const size = Math.random() * 3 + 1;
+            const moveX = (Math.random() - 0.5) * 200;
+            const moveY = (Math.random() - 0.5) * 200;
+
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${Math.random() * window.innerWidth}px`;
+            particle.style.top = `${Math.random() * window.innerHeight}px`;
+            particle.style.setProperty('--moveX', `${moveX}px`);
+            particle.style.setProperty('--moveY', `${moveY}px`);
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => particle.remove(), 2000);
+        }
+
+        setInterval(createParticle, 100);
+
+        document.addEventListener('mousemove', function(e) {
+            const trail = document.createElement('div');
+            trail.className = 'particle';
+            trail.style.width = '5px';
+            trail.style.height = '5px';
+            trail.style.left = e.pageX + 'px';
+            trail.style.top = e.pageY + 'px';
+            trail.style.setProperty('--moveX', '0px');
+            trail.style.setProperty('--moveY', '0px');
+            document.body.appendChild(trail);
+
+            setTimeout(() => trail.remove(), 500);
+        });
+    </script>
+</body>
+</html>
